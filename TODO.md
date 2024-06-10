@@ -1,0 +1,2 @@
+- [x] sin / cos positional encoding from d2l
+  - shakespeare_char_train_v2.ipynb

@@ -29,6 +29,9 @@ print(f"vocab size: {vocab_size:,}")
 # create a mapping from characters to integers
 stoi = { ch:i for i,ch in enumerate(chars) }
 itos = { i:ch for i,ch in enumerate(chars) }
+print("stoi:", stoi)
+print("itos:", itos)
+
 def encode(s):
     return [stoi[c] for c in s] # encoder: take a string, output a list of integers
 def decode(l):
@@ -45,6 +48,7 @@ val_ids = encode(val_data)
 print(f"train has {len(train_ids):,} tokens")
 print(f"val has {len(val_ids):,} tokens")
 
+# check the `block_size` in model.py it randomly samples a block of tokens
 # export to bin files
 train_ids = np.array(train_ids, dtype=np.uint16)
 val_ids = np.array(val_ids, dtype=np.uint16)
