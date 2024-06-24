@@ -1,3 +1,6 @@
+[submodule "build-nanogpt"]
+	path = build-nanogpt
+	url = https://github.com/karpathy/build-nanogpt.git
 [submodule "gpt-2"]
 	path = gpt-2
 	url = https://github.com/openai/gpt-2.git
