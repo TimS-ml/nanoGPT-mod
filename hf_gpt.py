@@ -118,9 +118,10 @@ class Block(nn.Module):
 
 
 class GPT(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, scale_init=True):
         super().__init__()
         self.config = config
+        self.scale_init = scale_init
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(config.vocab_size, config.n_embd),
@@ -132,7 +133,27 @@ class GPT(nn.Module):
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
         # https://www.youtube.com/watch?v=l8pRSuU81PU&t=3974s parameter sharing wte and lm_head
-        self.model.transformer.wte.weight = self.lm_head.weight
+        self.transformer.wte.weight = self.lm_head.weight
+
+        self.apply(self._init_weights)
+
+    def _init_weights(self, module):
+        '''
+        1/sqrt(768) = 0.036 and 1/sqrt(1600) = 0.025
+        so the value in gpt2 paper 0.02 is reasonable
+        '''
+        if isinstance(module, nn.Linear):
+            std = 0.02
+            if self.scale_init:
+                # '2 *' is because the two residual connections in the Block:
+                # attn and mlp
+                std *= (2 * self.config.n_layer) ** -0.5
+            torch.nn.init.normal_(module.weight, mean=0.0, std=std)
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
+
+        elif isinstance(module, nn.Embedding):
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
     
     def forward(self, idx, targets=None):
         # idx shape: (B, T)
