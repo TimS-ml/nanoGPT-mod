@@ -130,6 +130,9 @@ class GPT(nn.Module):
             ln_f = nn.LayerNorm(config.n_embd, bias=config.bias)
         ))
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
+
+        # https://www.youtube.com/watch?v=l8pRSuU81PU&t=3974s parameter sharing wte and lm_head
+        self.model.transformer.wte.weight = self.lm_head.weight
     
     def forward(self, idx, targets=None):
         # idx shape: (B, T)
@@ -150,8 +153,12 @@ class GPT(nn.Module):
         if targets is None:
             return logits
         else:
-            # logits.view(-1, logits.size(-1)): (B*T, Vocab Size) -> flatten
-            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
+            # logits.view(-1, logits.size(-1)): 
+            # flatten: (B, T, Vocab Size) -> (B * T, Vocab Size) 
+            loss = F.cross_entropy(
+                        logits.view(-1, logits.size(-1)), 
+                        targets.view(-1)
+                    )
             return logits, loss
 
     @classmethod
