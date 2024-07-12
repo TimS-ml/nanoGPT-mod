@@ -211,8 +211,8 @@ class GPT(nn.Module):
     
         num_decay_params = sum(p.numel() for p in decay_params)
         num_nodecay_params = sum(p.numel() for p in nodecay_params)
-        cprint(f"{len(decay_params)}, {num_decay_params:,}")
-        cprint(f"{len(nodecay_params)}, {num_nodecay_params:,}")
+        cprint(len(decay_params), num_decay_params)
+        cprint(len(nodecay_params), num_nodecay_params)
     
         # Create AdamW optimizer and use the fused version if it is available
         # NOTE: fused is only available on CUDA devices, but is much faster
