@@ -11,7 +11,7 @@ from torch.nn import functional as F
 # from transformers import GPT2LMHeadModel
 import matplotlib.pyplot as plt 
 
-from utils import *
+from utils import *; from boring_utils.utils import *
 from data_structure import add_to_class
 
 # init_graph()

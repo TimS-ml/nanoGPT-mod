@@ -12,6 +12,7 @@ Because the code is so simple, it is very easy to hack to your needs, train new 
 
 ```
 pip install torch numpy transformers datasets tiktoken wandb tqdm
+pip install -e git+https://github.com/TimS-ML/Boring-Utils.git
 ```
 
 Dependencies:

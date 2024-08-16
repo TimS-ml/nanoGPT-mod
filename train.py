@@ -27,7 +27,7 @@ import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
-from utils import *
+from utils import *; from boring_utils.utils import *
 from model import GPTConfig, GPT
 
 # -----------------------------------------------------------------------------

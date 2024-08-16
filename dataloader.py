@@ -1,7 +1,7 @@
 import torch
 import tiktoken
 import numpy as np
-from utils import *
+from utils import *; from boring_utils.utils import *
 
 
 def load_tokens(filename):
