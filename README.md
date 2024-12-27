@@ -236,8 +236,6 @@ Once the video comes out, this will also be a place for FAQ, and a place for fix
 
 ## Video
 
-[![Build nanoGPT Video Lecture]()
-
 ## Errata
 
 ## Run
