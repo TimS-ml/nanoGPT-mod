@@ -1,6 +1,8 @@
 data/
 checkpoint/
 
+*.code-workspace
+
 *.err
 *.out
 
