@@ -230,7 +230,6 @@ class GPT(nn.Module):
 
         I insist using pytorch's MHA instead of HF. So I need a key_mapping dict.
         '''
-        assert model_type in {'distilgpt2', 'gpt2', 'gpt2-medium', 'gpt2-large', 'gpt2-xl'}
         from transformers import GPT2LMHeadModel
         print("loading weights from pretrained gpt: %s" % model_type)
 
@@ -244,48 +243,41 @@ class GPT(nn.Module):
         print("forcing vocab_size=50257, block_size=1024, bias=True")
         config_args.update(vocab_size=50257, block_size=1024, bias=True)
 
-        # create a from-scratch initialized minGPT model
         config = GPTConfig(**config_args)
         model = GPT(config)
+        sd = model.state_dict()
+        sd_keys = sd.keys()
+
         model_hf = GPT2LMHeadModel.from_pretrained(model_type)
+        sd_hf = model_hf.state_dict()
+        sd_keys_hf = sd_hf.keys()
 
-        key_mapping = {
-            'transformer.wte.weight': 'transformer.wte.weight',
-            'transformer.wpe.weight': 'transformer.wpe.weight',
-            'transformer.ln_f.weight': 'transformer.ln_f.weight',
-            'transformer.ln_f.bias': 'transformer.ln_f.bias',
-            'lm_head.weight': 'lm_head.weight',
-        }
+        # filter out the mask
+        sd_keys = [k for k in sd_keys if not k.endswith('.attn.mask')]
+        sd_keys_hf = [k for k in sd_keys_hf if not k.endswith('.attn.masked_bias')]
+        sd_keys_hf = [k for k in sd_keys_hf if not k.endswith('.attn.mask')]
 
-        for i in range(config.n_layer):
-            layer_mapping = {
-                f'transformer.h.{i}.ln_1.weight': f'transformer.h.{i}.ln_1.weight',
-                f'transformer.h.{i}.ln_1.bias': f'transformer.h.{i}.ln_1.bias',
-                f'transformer.h.{i}.ln_2.weight': f'transformer.h.{i}.ln_2.weight',
-                f'transformer.h.{i}.ln_2.bias': f'transformer.h.{i}.ln_2.bias',
-                f'transformer.h.{i}.mlp.c_fc.weight': f'transformer.h.{i}.mlp.c_fc.weight',
-                f'transformer.h.{i}.mlp.c_fc.bias': f'transformer.h.{i}.mlp.c_fc.bias',
-                f'transformer.h.{i}.mlp.c_proj.weight': f'transformer.h.{i}.mlp.c_proj.weight',
-                f'transformer.h.{i}.mlp.c_proj.bias': f'transformer.h.{i}.mlp.c_proj.bias',
-            }
-            key_mapping.update(layer_mapping)
-
-            # copy attn weights
-            with torch.no_grad():
-                c_attn_weight = model_hf.state_dict()[f'transformer.h.{i}.attn.c_attn.weight'].t()  # (3*n_embd, n_embd)
-                c_attn_bias = model_hf.state_dict()[f'transformer.h.{i}.attn.c_attn.bias']  # (3*n_embd,)
-                model.transformer.h[i].attn.in_proj_weight.copy_(c_attn_weight)
-                model.transformer.h[i].attn.in_proj_bias.copy_(c_attn_bias)
-                out_proj_weight = model_hf.state_dict()[f'transformer.h.{i}.attn.c_proj.weight'].t()
-                out_proj_bias = model_hf.state_dict()[f'transformer.h.{i}.attn.c_proj.bias']
-                model.transformer.h[i].attn.out_proj.weight.copy_(out_proj_weight)
-                model.transformer.h[i].attn.out_proj.bias.copy_(out_proj_bias)
-
-        for k in key_mapping:
-            if k in model_hf.state_dict():
-                if 'mlp' in k and k.endswith('.weight'):
-                    model.state_dict()[key_mapping[k]].copy_(model_hf.state_dict()[k].t())
-                else:
-                    model.state_dict()[key_mapping[k]].copy_(model_hf.state_dict()[k])
-
+        with torch.no_grad():
+            for k in sd_keys_hf:
+                if 'attn.c_attn' in k:
+                    layer_prefix = k[:k.index('attn.c_attn')]
+                    if k.endswith('.weight'):
+                        new_k = layer_prefix + 'attn.in_proj_weight'
+                        sd[new_k].copy_(sd_hf[k].t())
+                    else:  # bias
+                        new_k = layer_prefix + 'attn.in_proj_bias'
+                        sd[new_k].copy_(sd_hf[k])
+                elif 'attn.c_proj' in k:
+                    layer_prefix = k[:k.index('attn.c_proj')]
+                    if k.endswith('.weight'):
+                        new_k = layer_prefix + 'attn.out_proj.weight'
+                        sd[new_k].copy_(sd_hf[k].t())
+                    else:  # bias
+                        new_k = layer_prefix + 'attn.out_proj.bias'
+                        sd[new_k].copy_(sd_hf[k])
+                elif any(k.endswith(w) for w in ['mlp.c_fc.weight', 'mlp.c_proj.weight']):
+                    sd[k].copy_(sd_hf[k].t())
+                elif k in sd:
+                    sd[k].copy_(sd_hf[k])
+    
         return model
