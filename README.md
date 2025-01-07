@@ -1,3 +1,10 @@
+# nanoGPT-Mod
+
+With BPE, Vision, RLHF, MOE, and more added.
+
+Checkout ./demo.ipynb for a demo.
+
+
 # nanoGPT
 
 ![nanoGPT](assets/nanogpt.jpg)
