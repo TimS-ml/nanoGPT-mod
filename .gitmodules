@@ -1,9 +1,6 @@
-[submodule "build-nanogpt"]
-	path = build-nanogpt
+[submodule "reference/build-nanogpt"]
+	path = reference/build-nanogpt
 	url = https://github.com/karpathy/build-nanogpt.git
-[submodule "gpt-2"]
-	path = gpt-2
-	url = https://github.com/openai/gpt-2.git
-[submodule "LLM101n"]
-	path = LLM101n
-	url = https://github.com/karpathy/LLM101n.git
+[submodule "reference/llm.c"]
+	path = reference/llm.c
+	url = git@github.com:TimS-ml/llm.c.git

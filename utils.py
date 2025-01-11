@@ -52,3 +52,8 @@ def get_lr(it, learning_rate, warmup_iters, lr_decay_iters, min_lr):
     return min_lr + coeff * (learning_rate - min_lr)
 
 
+def add_to_class(Class):
+    """Register functions as methods in created class."""
+    def wrapper(obj):
+        setattr(Class, obj.__name__, obj)
+    return wrapper
