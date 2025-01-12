@@ -12,7 +12,7 @@ from torch.nn import functional as F
 import matplotlib.pyplot as plt 
 
 from utils import *; from boring_utils.utils import *
-from data_structure import add_to_class
+from utils import add_to_class
 
 # init_graph()
 device = get_device()

@@ -2,7 +2,7 @@
 
 With BPE, Vision, RLHF, MOE, and more added.
 
-Checkout ./demo.ipynb for a demo.
+Checkout ./mini_chatgpt_demo.ipynb for a demo.
 
 
 # nanoGPT
